@@ -1,0 +1,20 @@
+ 
+The files u.item.* contain all the "relevant" features available through IMDBPy for each movie contained in u.item. The ID for each movie is the same as in u.item.
+
+Here's a short description of the contents of each file:
+
+u.item.more: 
+  - contains all the "one-dimensional" features. 
+  - The file format is the following: MovieID|Title|Year|Rating|Number of votes|Votes distribution|Plot
+  - The vote distribution is a string composed of ten numbers, and can be derived from the real distribution by the following algorithm: take the percentage of users who gave score X to the movie, round down to the next multiple of ten, and divide by ten. The number obtained is the number appearing at position X of the string. For example, a movie with the distribution 1 (5%) 2 (15%) 3 (30%) 4 (25%) 5 (17%) 6 (5%) 7 (1%) 8 (1%) 9 (0%) 10 (0%) would have the votes distribution string 0132100000
+  - Concerning the rating, IMDB says the following on their ratings page: "Weighted Average Ratings: IMDb publishes weighted vote averages rather than raw data averages. Various filters are applied to the raw data in order to eliminate and reduce attempts at 'vote stuffing' by individuals more interested in changing the current rating of a movie than giving their true opinion of it. The exact methods we use will not be disclosed. This should ensure that the policy remains effective. The result is a more accurate vote average."
+  - For the plots, I've stripped the author name of each plot and concatenated them together to form a single string.
+  
+u.item.keywords:
+  - The file format is the following: KeywordID|Keyword name|Position in keyword-list for movie #1|...|Position in keyword list for movie #N
+  - If the position is 0 for movie #X, that means the keyword doesn't appear in the list of keywords for movie #X
+  
+u.item.composers, u.item.directors, u.item.genres, u.item.writers, u.item.actors, u.item.countries:
+  - Same format as for u.item.keywords
+  
+I've also included the python script I've used to extract the features, but I must warn you that it is very (VERY ;) ) ugly because many "special cases" had to be handled where the imdb title, year or type didn't correspond with the one given in u.item.
