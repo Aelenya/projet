@@ -2,7 +2,7 @@
 # encore necessaires (elles n'y sont pas toutes la)
 
 pathMovies = "../data/movies/";
-patUsers = "../data/users";
+pathUsers = "../data/users/";
 
 
 # Infos relatives aux films avec les ajouts de IMDb
@@ -20,6 +20,7 @@ getComposers = function(){
 
 }
 
+
 # Infos relatives aux utilisateurs
 getUsers = function(){
 
@@ -29,15 +30,16 @@ getUsers = function(){
 
 getRatings = function(){
 
-	ratings = read.table(paste(pathUsers,"u.data",sep=""), header = TRUE, sep = "|");
-	return(rating);
+	ratings = read.table(paste(pathUsers,"u.data",sep=""), header = TRUE, sep = "\t");
+	return(ratings);
 
 }
 
+# Retourne le nom des genres possibles et leur id
 getGenres = function(){
 
 	genres = read.table(paste(pathUsers,"u.genre",sep=""), header = TRUE, sep = "|");
-	return(genre);
+	return(genres);
 
 }
 
