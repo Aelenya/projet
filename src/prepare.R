@@ -90,6 +90,34 @@ itemCold.BASIC = function(user)
 	# les 2/3 restants seront donc les trainData
 	trainMovies = movies[-testId,];
 	
+	#Construction des test data (cf commentaire des train data, plus complet)
+	testData = list();
+	A = 1;
+	for(i in seq(dim(testMovies)[1])){
+		movie = movies[testMovies[i,1],];
+		movieGenres = list();
+		k = 1;
+		for(x in seq(6,dim(movie)[2])){
+			if(movie[1,x] == 1){
+				movieGenres[[k]] = genres[x-5,1];
+				k = k+1;
+			}
+		}
+		date = as.numeric(strsplit(as.character(movie[1,3]),"-")[[1]][3]);
+		for(x in seq(1,length(movieGenres))){
+			g = levels(movieGenres[[x]])[(levels(movieGenres[[x]]) == movieGenres[[x]])];
+			id = which(genres[,1] == g);
+			#On met la premiere colonne a 0 (colonne a "predire")
+			if(x == 1){
+				testData[[A]] = c(0,id,date);
+			}
+			else{
+				testData[[A]] = c(0,id,NA);
+			}
+			A = A+1;
+		}
+	}
+
 	#Construction des train data
 	trainData = list();
 	A = 1;
@@ -106,22 +134,22 @@ itemCold.BASIC = function(user)
 				#On recupere les genres du film (classe svm)
 				movieGenres = list();
         			k = 1;
-	      			for(i in seq(6,dim(movie)[2])){
-                			if(movie[1,i] == 1){
-		  				movieGenres[[k]] = genres[i-5,1];
+	      			for(x in seq(6,dim(movie)[2])){
+                			if(movie[1,x] == 1){
+		  				movieGenres[[k]] = genres[x-5,1];
 		  				k = k+1;
                 			}
         			}
 				#On recupere la date du film (classe svm)
 				date = as.numeric(strsplit(as.character(movie[1,3]),"-")[[1]][3]);
 				#On ajoute aux trainData la note,le genre et la date
-				for(i in seq(1,length(movieGenres))){
-					#On extrait le nom du genre -syntaxe made in R...-
-					g = levels(movieGenres[[i]])[(levels(movieGenres[[i]]) == movieGenres[[i]])];
+				for(x in seq(length(movieGenres))){
+					#On extrait le nom du genre -syntaxe made in R...-	
+					g = levels(movieGenres[[x]])[(levels(movieGenres[[x]]) == movieGenres[[x]])];
 					#On s'en sert pour obtenir l'id du genre
 					id = which(genres[,1] == g);
 					#On n'ajoute qu'une fois la date [cf 1.]
-					if(i == 1){
+					if(x == 1){
 						trainData[[A]] = c(y,id,date);
 					}
 					else{
@@ -134,16 +162,22 @@ itemCold.BASIC = function(user)
 			} 
 		}
 	}
-	trainData = data.frame(matrix(unlist(trainData), ncol = 3, byrow = TRUE));
-	colnames(trainData) = c("Like","Genre","Year");
-return(trainData);
-	# On conserve les GENRES des films
-	#testData = subset(testData, select = c("empty","Action","Adventure","Animation","Childrens","Comedy","Crime","Documentary","Drama","Fantasy","Film.Noir","Horror","Musical","Mystery","Romance","Sci.Fi","Thriller","War","Western"));
-	#trainData = subset(trainData, select = c("empty","Action","Adventure","Animation","Childrens","Comedy","Crime","Documentary","Drama","Fantasy","Film.Noir","Horror","Musical","Mystery","Romance","Sci.Fi","Thriller","War","Western"));
 
-	# on applique un svm sur les trainData
-	result = svm(Action~., data = trainData);
-	prediction = predict(result, testData[,-2]);
-	res = table(pred = prediction, true = testData[,2]);
-	return(res);
+	#On transforme les data en data.frame (plus lisible et utilisable)
+	testData = data.frame(matrix(unlist(testData), ncol = 3, byrow = TRUE));
+	trainData = data.frame(matrix(unlist(trainData), ncol = 3, byrow = TRUE));
+	#On nome les colonnes (plus lisible et utilisable pour svm)
+	colnames(testData) = c("Like", "Genre","Year");
+	colnames(trainData) = c("Like","Genre","Year");
+	#On effecte la classification svm
+	model = svm(Like~.,data=trainData,type="C-classification");
+	#On plot le graphe de classification
+	plot(model,trainData);
+	#On effectue la prediction a propos du modele svm 
+	prediction = predict(model, testData[,-1], na.action = na.exclude);
+	#On prepare la variable de prediction et on la retourne
+	result = as.data.frame(prediction);
+	result[,2] = testData[,2];
+	result[,3] = testData[,3];
+	return(result);
 }
