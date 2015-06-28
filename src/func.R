@@ -11,4 +11,21 @@
   } else {
     r
   }
-}       
+}
+
+#Definition de l'ajout d'un element par 'tri a bulle' dans une (petite !) matrice
+
+#####A FINIR <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+bubbleAdd = function(v, newElement){
+
+	globalV = v;
+	globalV = rbind(globalV, newElement);
+	for(i in length(globalV):2){
+		if(globalV[i][1] < globalV[i-1][1]){
+			tmp = globalV[i-1];
+			globalV[i-1] = globalV[i];
+			globalV[i] = tmp;
+		}
+	}
+	return(globalV[-dim(a)[1]]);
+}
