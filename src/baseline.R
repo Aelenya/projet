@@ -1,20 +1,23 @@
 #Fichier contenant les fonctions servant au calcul des baselines
 
 source("import.R");
+source("checkData.R");
 ratings = getRatings();
 
-MP = function(y){
+MP = function(movies){
 
 	yPrime = vector();
-	for(j in seq(dim(y)[1])){
+	for(i in length(movies)){
+		j = movies[i,1];
 		Nj = nbRat(j);
-		yBarre = avg(j);
+		yBarreJ = avg(j);
+		yBarre = globalAverageRating();
 		alpha = 2;
 		num = yBarre * Nj + yBarre * alpha;
 		den = Nj + alpha;
-		yPrime[j] = num/den;
+		yPrime[i] = num/den;
 	}
-	return(nPrime);
+	return(yPrime);
 }
 
 

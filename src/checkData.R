@@ -33,3 +33,15 @@ ratingsPerUser = function(){
 	abline( lm(as.numeric(m)~as.numeric(moyM)), col="red" );
 }
 
+globalAverageRating = function(){
+
+	nbRatings = dim(ratings)[1];
+	avg = 0;
+	
+	for(i in seq(nbRatings)){
+		avg = avg + ratings[i,3];
+	}
+	avg = avg / nbRatings;
+	return(avg);
+
+}

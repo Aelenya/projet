@@ -70,10 +70,20 @@ f = function(user, movie){
 	return(res);
 }
 
+#fonction initialisant les start (gere le sel + construction des donnees)
+init = function(){
+	movies = getMovies();
+	nbMovies = dim(movies)[1];
+	testId = sample(nbMovies, trunc(nbMovies/3));
+	return(testId);
+}
+
 #item cold start sans elements ajoutes de IMDb
-itemCold.BASIC = function(user)
+itemCold.BASIC = function(user, testId)
 {
-	userId = user[1,1];
+print(user);
+	#userId = user[1,1];
+	userId = user;
 	userRatings = list();
 	k = 1;
 	for(i in seq(dim(ratings)[1])){
@@ -83,9 +93,7 @@ itemCold.BASIC = function(user)
 		}
 	}
 	movies = getMovies();
-	nbMovies = dim(movies)[1];
 	# on tire aleatoirement 1/3 des films comme testData
-	testId = sample(nbMovies, trunc(nbMovies/3));
 	testMovies = movies[testId,];
 	# les 2/3 restants seront donc les trainData
 	trainMovies = movies[-testId,];
@@ -129,7 +137,8 @@ itemCold.BASIC = function(user)
 				#On recupere les infos du film
 				movie = movies[trainMovies[i,1],];
 				#Si note > 3 : il a aime (1), sinon non (0), recherche svm
-				y = userRatings[[j]][1,2] > 3 ? 1 : 0;
+				#y = userRatings[[j]][1,2] > 3 ? 1 : 0;
+				y = userRatings[[j]][1,2];
 
 				#On recupere les genres du film (classe svm)
 				movieGenres = list();
@@ -171,8 +180,11 @@ itemCold.BASIC = function(user)
 	colnames(trainData) = c("Like","Genre","Year");
 	#On effecte la classification svm
 	model = svm(Like~.,data=trainData,type="C-classification");
-	#On plot le graphe de classification
+	#On save et plot le graphe de classification
+	name = paste(c("res/plot",userId,".png"),collapse="");
+	png(name);
 	plot(model,trainData);
+	dev.off();
 	#On effectue la prediction a propos du modele svm 
 	prediction = predict(model, testData[,-1], na.action = na.exclude);
 	#On prepare la variable de prediction et on la retourne
