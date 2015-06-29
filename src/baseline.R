@@ -13,10 +13,12 @@ MP = function(){
 	yPrime = vector(mode = "integer", length = dim(movies)[1]);
 	alpha = 2;
 	yBarre = globalAverageRating();
+	N = ratingsPerFilm();
+	yBarreJPrime = averageRatingPerFilm(N);
 	for(i in seq(dim(movies)[1])){
 		j = movies[i,1];
-		Nj = nbRat(j);
-		yBarreJ = avg(j);
+		Nj = N[j];
+		yBarreJ = yBarreJPrime[j];
 		num = yBarreJ * Nj + yBarre * alpha;
 		den = Nj + alpha;
 		yPrime[i] = num/den;
@@ -30,36 +32,6 @@ UB = function(c,y){
 
 
 }
-
-# Fonction retournant la note moyenne des evaluations d'un film
-avg = function(id){
-
-	moy = 0;
-	div = 0;
-	for(i in seq(dim(ratings)[1])){
-		rating = ratings[i,];
-		if(rating[1,2] == id){
-			moy = moy + rating[1,3];
-			div = div + 1;
-		}
-	}
-	moy = moy / div;
-	return(moy);
-}
-
-# Fonction retournant le nombre d'evaluation pour un film
-nbRat = function(id){
-
-	nb = 0;
-	for(i in seq(dim(ratings)[1])){
-		rating = ratings[i,];
-		if(rating[1,2] == id){
-			nb = nb + 1;
-		}
-	}
-	return(nb);
-}
-
 # Fonction retournant les k plus proches voisins d'un utilisateur
 getNeighbors = function(user, k){
 

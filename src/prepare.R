@@ -37,37 +37,8 @@ getY = function(){
 f = function(user, movie){
 	
 	#On obtient l'id de l'utilisateur
-	userId = user[1,1];
+	userId = user[1,1];	
 	
-	#On obtient toutes les notes qu'il a attribue
-	userRatings = list();
-	k = 1;
-	for(i in seq(dim(ratings)[1])){
-		if(ratings[i,1] == userId){
-			#on ne conserve que l'id du film et la note donnee
-			userRatings[k] = ratings[i,c(2,3)];
-			k = k + 1;
-		}
-	}
-	
-
-	#On obtient l'id du film
-	movieId = movie[1,1];
-	
-	#On obtient le(s) genre(s) du film
-	movieGenres = c();
-	k = 1;
-	for(i in seq(6,dim(genres)[1])){
-		if(movie[1,i] == 1){
-		movieGenres[k] = genres[i-5,1];
-		}
-	}
-
-
-	var = subset(movie, select = c("empty","Action","Adventure","Animation","Childrens","Comedy","Crime","Documentary","Drama","Fantasy","Film.Noir","Horror","Musical","Mystery","Romance","Sci.Fi","Thriller","War","Western"));
-	#res = svm(var, data = movie,  movie$movie.id);
-	#res = svm(Action~.,data=getMovies();
-	return(res);
 }
 
 #fonction initialisant les start (gere le sel + construction des donnees)
@@ -180,16 +151,27 @@ print(user);
 	colnames(trainData) = c("Like","Genre","Year");
 	#On effecte la classification svm
 	model = svm(Like~.,data=trainData,type="C-classification");
-	#On save et plot le graphe de classification
-	name = paste(c("res/plot",userId,".png"),collapse="");
-	png(name);
-	plot(model,trainData);
-	dev.off();
-	#On effectue la prediction a propos du modele svm 
-	prediction = predict(model, testData[,-1], na.action = na.exclude);
-	#On prepare la variable de prediction et on la retourne
-	result = as.data.frame(prediction);
-	result[,2] = testData[,2];
-	result[,3] = testData[,3];
-	return(result);
+	tryCatch({
+		#On save et plot le graphe de classification
+		name = paste(c("res/plot",userId,".png"),collapse="");
+		png(name);
+		plot(model,trainData);
+		dev.off();
+	},
+	error = function(e){
+		cat("/!\\ Variable constante pour l'utilisateur ",userId," /!\\ \n");
+	});
+	tryCatch({
+		#On effectue la prediction a propos du modele svm 
+		prediction = predict(model, testData[,-1], na.action = na.exclude);
+		#On prepare la variable de prediction et on la retourne
+		result = as.data.frame(prediction);
+		result[,2] = testData[,2];
+		result[,3] = testData[,3];
+		return(result);
+	},
+	error = function(e){
+		cat("/!\\ Aucune prediction pour l'utilisateur ", userId, " /!\\ \n");
+		return(-1);
+	});
 }

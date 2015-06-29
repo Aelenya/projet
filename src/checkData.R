@@ -34,10 +34,8 @@ ratingsPerUser = function(){
 }
 
 globalAverageRating = function(){
-
 	nbRatings = dim(ratings)[1];
 	avg = 0;
-	
 	for(i in seq(nbRatings)){
 		avg = avg + ratings[i,3];
 	}
@@ -45,3 +43,37 @@ globalAverageRating = function(){
 	return(avg);
 
 }
+
+ratingsPerFilm = function(){
+
+	nbMovies = dim(movies)[1];
+	nbRatings = dim(ratings)[1];
+	retour = vector(mode = "integer", length = nbMovies);
+	for(i in seq(nbMovies)){
+		retour[i] = 0;
+	}
+	for(i in seq(nbRatings)){
+		rating = ratings[i,];
+		retour[rating[[2]]] = retour[rating[[2]]] + 1;
+	}
+	return(retour);
+}
+
+averageRatingPerFilm = function(nbRat){
+
+	nbMovies = dim(movies)[1];
+	nbRatings = dim(ratings)[1];
+	retour = vector(mode = "integer", length = nbMovies);
+	for(i in seq(nbMovies)){
+		retour[i] = 0;
+	}
+	for(i in seq(nbRatings)){
+		rating = ratings[i,];
+		retour[rating[[2]]] = retour[rating[[2]]]+rating[[3]];
+	}
+	for(i in seq(length(retour))){
+		retour[i] = retour[i]/nbRat[i];
+	}
+	return(retour);
+}
+

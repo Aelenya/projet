@@ -12,6 +12,8 @@ if(myRank == 0){
 	u = getUsers();
 	user = 1;
 	testId = init();
+	#sauve le testId pour pouvoir reprendre la session a l'identique
+	write(as.matrix(testId),file="res/salt",ncolumns=1,append=FALSE);
 	first = 1;
 }
 
@@ -21,8 +23,7 @@ for(a in seq(nbData)){
 }
 
 if(myRank == 0){
-	#while(user-1 != dim(u)[1]){
-	while(user-1 != 10){
+	while(user-1 != dim(u)[1]){
 		if(first == 1){
 			for(id in seq(nProc-1)){
 				value = u[user,1];
