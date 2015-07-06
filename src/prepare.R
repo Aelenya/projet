@@ -52,7 +52,6 @@ init = function(){
 #item cold start sans elements ajoutes de IMDb
 itemCold.BASIC = function(user, testId)
 {
-print(user);
 	#userId = user[1,1];
 	userId = user;
 	userRatings = list();
@@ -146,11 +145,11 @@ print(user);
 	#On transforme les data en data.frame (plus lisible et utilisable)
 	testData = data.frame(matrix(unlist(testData), ncol = 3, byrow = TRUE));
 	trainData = data.frame(matrix(unlist(trainData), ncol = 3, byrow = TRUE));
-	#On nome les colonnes (plus lisible et utilisable pour svm)
+	#On nomme les colonnes (plus lisible et utilisable pour svm)
 	colnames(testData) = c("Like", "Genre","Year");
 	colnames(trainData) = c("Like","Genre","Year");
 	#On effecte la classification svm
-	model = svm(Like~.,data=trainData,type="C-classification");
+	model = svm(Like~.,data=trainData,type="C-classification",kernel="polynomial");
 	tryCatch({
 		#On save et plot le graphe de classification
 		name = paste(c("res/plot",userId,".png"),collapse="");
@@ -162,16 +161,25 @@ print(user);
 		cat("/!\\ Variable constante pour l'utilisateur ",userId," /!\\ \n");
 	});
 	tryCatch({
-		#On effectue la prediction a propos du modele svm 
+		#On effectue la prediction a partir du modele svm 
 		prediction = predict(model, testData[,-1], na.action = na.exclude);
 		#On prepare la variable de prediction et on la retourne
 		result = as.data.frame(prediction);
 		result[,2] = testData[,2];
 		result[,3] = testData[,3];
-		return(result);
+		#On insere l'id des films pour chaque element
+		clean = result[-which(is.na(result[,3])),];
+		clean[,4] = testId;
+		#colnames(clean) = c("Like","Genre","Year","Movie id");
+		return(clean);
 	},
 	error = function(e){
 		cat("/!\\ Aucune prediction pour l'utilisateur ", userId, " /!\\ \n");
 		return(-1);
 	});
+}
+
+#Fonction dans laquelle on base svm sur des features provenant de IMDB
+itemCold.IMDB = function(userId, testId, infos){
+
 }

@@ -64,7 +64,7 @@ if(myRank != 0){
 		#ecrit dans un fichier le resultat obtenus
 		for(k in seq(dim(res)[1])){
 			name = paste(c("res/data%",userId),collapse="");
-			write(as.matrix(res[k,]),file=name,ncolumns=3,sep="\t",append=TRUE);
+			write(as.matrix(res[k,]),file=name,ncolumns=4,sep="\t",append=TRUE);
 		}
 		mpi.send(myRank, 2, 0, tag, comm = 0);
 	}

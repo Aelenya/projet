@@ -6,7 +6,7 @@ source("func.R");
 
 ratings = getRatings();
 movies = getMovies();
-user = getUsers();
+users = getUsers();
 
 MP = function(){
 
@@ -27,10 +27,34 @@ MP = function(){
 }
 
 
-UB = function(c,y){
-
-
-
+UB = function(user){
+	print(user[1,1]);
+	nbMovies = dim(movies)[1];
+	k = 15; #k-nearest neighbors
+	yPrime = vector(mode = "integer", length = dim(movies)[1]);
+	#On recupere les k plus proches autre utilisateurs
+	nearest = getNeighbors(user, k);
+	#Pour chaque film...
+	for(j in seq(nbMovies)){
+		somme = 0;
+		div = 0;
+		#Pour chaque voisin...
+		for(n in seq(k)){
+			#On trouve s'il a note le film, ratings[,1] = userId et
+			#ratings[,2] = movieId
+			r = which(ratings[,1] == nearest[n,2]);
+			f = which(ratings[r,2] == j)				
+			if(length(f) != 0){
+				rat = r[f]; #id de la ratings du voisin qui a note ce film
+				somme = somme + ratings[rat,3];
+				div = div+1;
+			}
+		}
+#Question : diviser par div (nombre de ratings) ou par k (nombre de voisins, eq de l'enonce)		
+		somme = somme/div;
+		yPrime[j] = somme;
+	}
+	return(yPrime);
 }
 # Fonction retournant les k plus proches voisins d'un utilisateur
 getNeighbors = function(user, k){
@@ -48,7 +72,6 @@ getNeighbors = function(user, k){
 			dist = euclideanDistance(user, users[i,]);
 			#On conserve l'id de l'user compare
 			dist[2] = i;
-				#FINIR LA FONCTION BUBBLEADD ET CELLE-CI !!
 			neighbors = bubbleAdd(neighbors, dist);	
 		}
 	}
