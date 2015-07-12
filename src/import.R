@@ -15,10 +15,39 @@ getMovies = function(){
 
 getComposers = function(){
 
-	composers = read.table(paste(pathMovies,"u.item.composers",sep=""), header = TRUE, sep = "|");
+	composers = read.table(paste(pathMovies,"u.item.composers",sep=""), header = FALSE, sep = "|");
+	colnames(composers) = c("Composer.id","Name");
 	return(composers);
-
 }
+
+getCountries = function(){
+
+	countries = read.table(paste(pathMovies,"u.item.countries",sep=""), header = FALSE, sep = "|");
+	colnames(countries) = c("Country.id","Name");
+	return(countries);
+}
+
+getDirectors = function(){
+
+	directors = read.table(paste(pathMovies,"u.item.directors",sep=""), header = FALSE, sep = "|");
+	colnames(directors) = c("Director.id","Name");
+	return(directors);
+}
+
+getKeywords = function(){
+
+	keywords = read.table(paste(pathMovies,"u.item.keywords",sep=""), header = FALSE, sep = "|");
+	colnames(keywords) = c("Keyword.id","Name");
+	return(keywords);
+}
+
+getWriters = function(){
+
+	writers = read.table(paste(pathMovies,"u.item.writers",sep=""), header = FALSE, sep = "|");
+	colnames(writers) = c("Writer.id","Name");
+	return(writers);
+}
+
 
 
 # Infos relatives aux utilisateurs

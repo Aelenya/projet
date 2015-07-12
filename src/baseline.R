@@ -23,6 +23,13 @@ MP = function(){
 		den = Nj + alpha;
 		yPrime[i] = num/den;
 	}
+	yPrime = data.frame(matrix(unlist(yPrime),ncol = 1, byrow = TRUE));
+	yPrime[,2:3] = 0;
+	for(i in seq(dim(yPrime)[1])){
+		yPrime[i,4] = i;
+	}
+	colnames(yPrime) = c("Like","Genre","Year","Movie.id");
+	yPrime = yPrime[order(yPrime$Like, decreasing = TRUE),];
 	return(yPrime);
 }
 
@@ -31,7 +38,7 @@ UB = function(user){
 	print(user[1,1]);
 	nbMovies = dim(movies)[1];
 	k = 15; #k-nearest neighbors
-	yPrime = vector(mode = "integer", length = dim(movies)[1]);
+	yPrime = vector(mode = "integer", length = nbMovies);
 	#On recupere les k plus proches autre utilisateurs
 	nearest = getNeighbors(user, k);
 	#Pour chaque film...
@@ -50,10 +57,18 @@ UB = function(user){
 				div = div+1;
 			}
 		}
-#Question : diviser par div (nombre de ratings) ou par k (nombre de voisins, eq de l'enonce)		
 		somme = somme/div;
 		yPrime[j] = somme;
 	}
+	#On met en forme le vecteur de retour pour correspondre au format des apprentissages
+	yPrime = data.frame(matrix(unlist(yPrime),ncol = 1, byrow = TRUE));
+	yPrime[,2:3] = 0;
+	for(i in seq(dim(yPrime)[1])){
+		yPrime[i,4] = i;
+	}
+	colnames(yPrime) = c("Like","Genre","Year","Movie.id");
+	yPrime = yPrime[order(yPrime$Like, decreasing = TRUE),];
+	yPrime = yPrime[-which(is.nan(yPrime[,1])),];
 	return(yPrime);
 }
 # Fonction retournant les k plus proches voisins d'un utilisateur

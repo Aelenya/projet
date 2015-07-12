@@ -170,7 +170,9 @@ itemCold.BASIC = function(user, testId)
 		#On insere l'id des films pour chaque element
 		clean = result[-which(is.na(result[,3])),];
 		clean[,4] = testId;
-		#colnames(clean) = c("Like","Genre","Year","Movie id");
+		colnames(clean) = c("Like","Genre","Year","Movie.id");
+		#On ordonne par ordre decroissant de note et d'id
+		clean = clean[order(clean$Like, decreasing = TRUE), ];
 		return(clean);
 	},
 	error = function(e){
@@ -180,6 +182,9 @@ itemCold.BASIC = function(user, testId)
 }
 
 #Fonction dans laquelle on base svm sur des features provenant de IMDB
-itemCold.IMDB = function(userId, testId, infos){
+itemCold.IMDB = function(userId, testId, class){
+
+	if(class == "composers"){
+	}
 
 }
