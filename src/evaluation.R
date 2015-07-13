@@ -1,33 +1,44 @@
 # Fichier contenant les fonctions servant a l'evaluation de la qualite de notre recommandation
 
-DCG = function(y,yPrime,k){
-cat("\n  #############################");
+DCG = function(y){
 	somme = 0;
-	rank = 1;
-	for(i in seq(dim(yPrime)[1])){
-		id = yPrime[i,4];
-		rel = -1;
-		if(dim(y[which(y[,4] == id),])[1] > 0){
-			rel = as.integer(yPrime[i,1]);
+	for(i in seq(dim(y)[1])){
+		if(is.na(y[i,1])){
+			rel = 0;
 		}
-		if(rel != -1){
-			num = 2^rel - 1;
-			den = log2(i + 1);
-			somme = somme + (num/den);
-			rank = rank + 1;
-	#tester les valeurs
-cat("\n id = ",id," rel = ",rel," rank = ",rank," pos = ",i);
-		}
-		if(rank == k) break;
+		else rel = as.integer(y[i,1]);
+		num = (2^rel) - 1;
+		den = log2(i + 1);
+		somme = somme + (num / den);
 	}
 	return(somme);
 }
 
 #y = vraie (test data) valeur, yPrime = train data, k = lvl de troncation
 NDCG = function(y,yPrime,k){
-	#On supprime les eventuelles lignes 'fantomes' (notes pas dans ]0,5])
-	y = y[which(y[,1] > 0),];
-	res = DCG(y,yPrime,k)/DCG(y,y,k);
+
+	tmp = yPrime;
+	count = 1;
+	#On ne conserve que les films que l'utilisateur a note
+	for(i in seq(dim(yPrime)[1])){
+		id = which(y[,4] == yPrime[i,4]);
+		if(length(id) > 0){
+			tmp[count,] = yPrime[i,];
+			count = count + 1;
+		}	
+	}
+	tmp[count:dim(yPrime)[1],] = NA;
+	tmp = tmp[which(!is.na(tmp[,2])),];
+	yPrime = tmp;
+	y = y[1:k,];
+	#On met les films hors du top-k de l'utilisateur a 0
+	for(i in seq(dim(yPrime)[1])){
+		id = which(y[,4] == yPrime[i,4]);
+		if( !(length(id) > 0) ){
+			yPrime[i,1] = 0;
+		}
+	}
+	res = DCG(yPrime)/DCG(y);
 	return(res);
 }
 

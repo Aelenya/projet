@@ -82,17 +82,19 @@ itemCold.BASIC = function(user, testId)
 			}
 		}
 		date = as.numeric(strsplit(as.character(movie[1,3]),"-")[[1]][3]);
+		select = sample(1:length(movieGenres),1);
 		for(x in seq(1,length(movieGenres))){
 			g = levels(movieGenres[[x]])[(levels(movieGenres[[x]]) == movieGenres[[x]])];
 			id = which(genres[,1] == g);
 			#On met la premiere colonne a 0 (colonne a "predire")
-			if(x == 1){
+			if(x == select){
 				testData[[A]] = c(0,id,date);
+			#else{
+			#	testData[[A]] = c(0,id,NA);
+			#}
+				A = A + 1;
+				break;
 			}
-			else{
-				testData[[A]] = c(0,id,NA);
-			}
-			A = A+1;
 		}
 	}
 
@@ -164,7 +166,8 @@ itemCold.BASIC = function(user, testId)
 		result[,2] = testData[,2];
 		result[,3] = testData[,3];
 		#On insere l'id des films pour chaque element
-		clean = result[-which(is.na(result[,3])),];
+		#clean = result[-which(is.na(result[,3])),];
+		clean = result;
 		clean[,4] = testId;
 		colnames(clean) = c("Like","Genre","Year","Movie.id");
 		#On ordonne par ordre decroissant de note et d'id
@@ -187,30 +190,31 @@ itemCold.IMDB = function(userId, testId, class1, class2){
 		info1 = getComposers();
 	}
 	if(class1 == "directors" || class2 == "directors"){
-		if(info1 == -1){
+		if(length(info1) <= 1){
 			info1 = getDirectors();
 		}
 		else info2 = getDirectors();
 	}
 	if(class1 == "keywords" || class2 == "keywords"){
-		if(info1 == -1){
+		if(length(info1) <= 1){
 			info1 = getKeywords();
 		}
 		else info2 = getKeywords();
 	}
 	if(class1 == "writers" || class2 == "writers"){
-		if(info1 == -1){
+		if(length(info1) <= 1){
 			info1 = getWriters();
 		}
 		else info2 = getWriters();
 	}
 	if(class1 == "countries" || class2 == "countries"){
-		if(info1 == -1){
+		if(length(info1) <= 1){
 			info1 = getCountries();
 		}
-		else info2 = getWriters();
+		else info2 = getCountries();
 	}
-	if(info1 == -1 || info2 == -1) stop("Aucune classe valide selectionee");
+
+	if(length(info1) <= 1 || length(info2) <= 1) stop("Aucune classe valide selectionee");
 
 	userRatings = list();
 	k = 1;
@@ -226,47 +230,118 @@ itemCold.IMDB = function(userId, testId, class1, class2){
 
 	testData = list();
 	A = 1;
+	#Pour chaque testMovie
 	for(i in seq(dim(testMovies)[1])){
 		movie = movies[testMovies[i,1],];
 		col1 = list(); col2 = list();
 		k1 = 1; k2 = 1;
-		#Pour chaque element dans la colonne importee...
-		for(x in seq(dim(info1)[1])){
-			#Si a la position de l'id du film on a autre chose que 0...
-			if(info1[x,2+movie[1]] > 0){
-				#On ajoute l'id de l'import (pas besoin des char precis)
-				col1[[k1]] = info1[x,1];
-				k1 = k1 + 1;
-			}
+		
+		inf1 = which(info1[,2 + as.integer(movie[1])] > 0);
+		for(x in seq(length(inf1))){
+			col1[[k1]] = info1[inf1[x],1];
+			k1 = k1 + 1;
 		}
-		#Meme chose pour la deuxieme colonne...
-		for(x in seq(dim(info2)[1])){
-			if(info2[x,2+movie[1]] > 0){
-				col2[[k2]] = info2[x,1];
-				k2 = k2+1;
-			}
+		inf2 = which(info2[,2 + as.integer(movie[1])] > 0);
+		for(x in seq(length(inf2))){
+			col2[[k2]] = info2[inf2[x],1];
+			k2 = k2 + 1;
 		}
-	 #########################
-		for(x in seq(1,length(col1))){
-			if(x == 1){
-				testData[[A]] = c(0, as.integer(col1[[x]]), as.integer(col2[[x]]));
-			}
+		rnd1 = sample(1:length(col1),1);
+		rnd2 = sample(1:length(col2),1);
+		if(length(col1) <= 0 || length(col1[[rnd1]]) == 0){
+			elem1 = NA;
 		}
+		else{
+			elem1 = as.integer(col1[[rnd1]]);
+		}
+		if(length(col2) == 0 || length(col2[[rnd2]]) == 0){
+			elem2 = NA;
+		}
+		else{
+			elem2 = as.integer(col2[[rnd2]]);
+		}
+		testData[[A]] = c(0, elem1, elem2);
+		A = A + 1;
 	}
-	traindata = list();
+
+	trainData = list();
 	A = 1;
+	#Pour chaque trainMovie
 	for(i in seq(dim(trainMovies)[1])){
 		for(j in seq(length(userRatings))){
 			if(trainMovies[i,1] == userRatings[[j]][1,1]){
 				movie = movies[trainMovies[i,1],];
 				y = userRatings[[j]][1,2];
-				for(x in seq(dim(info1)[1])){
-					if(info1[x,2+movie[1]] > 0){
-						col1[[k1]] = info1[x,1];
-						###############
-					}
+				col1 = list(); col2 = list();
+				k1 = 1; k2 = 1;
+				inf1 = which(info1[,2 + as.integer(movie[1])] > 0);
+				for(x in seq(length(inf1))){
+					col1[[k1]] = info1[inf1[x],1];
+					k1 = k1 + 1;
 				}
+				inf2 = which(info2[,2 + as.integer(movie[1])] > 0);
+				for(x in seq(length(inf2))){
+					col2[[k2]] = info2[inf2[x],1];
+					k2 = k2 + 1;
+				}
+				if(length(col1) > 1 || length(col2) > 1){
+					#cat("\n /!\\ dimension de taille <",length(col1),",",length(col2),"> tronquee /!\\");
+				}
+				
+				rnd1 = sample(1:length(col1),1);
+				rnd2 = sample(1:length(col2),1);
+				if(length(col1) == 0 || length(col1[[rnd1]]) == 0){
+					elem1 = NA;
+				}
+				else{
+					elem1 = as.integer(col1[[rnd1]]);
+				}
+				if(length(col2) == 0 || length(col2[[rnd2]]) == 0){
+					elem2 = NA;
+				}
+				else{
+					elem2 = as.integer(col2[[rnd2]]);
+				}
+				trainData[[A]] = c(y,elem1,elem2);
+				A = A + 1;
+				break;
 			}
 		}
 	}
+	testData = data.frame(matrix(unlist(testData), ncol = 3, byrow = TRUE));
+	trainData = data.frame(matrix(unlist(trainData), ncol = 3, byrow = TRUE));
+
+	#On extrait le nom des donnees, p.ex Director.id donne  Director, /!\ il faut
+	#que les donnees passees aient comme premier nom de colonne X.id avec X le nom
+	#des donnees (mis en page ainsi automatiquement dans les fonctions d'import)
+	nameData1 = unlist(strsplit(colnames(info1)[1],"[.]"));
+	nameData2 = unlist(strsplit(colnames(info2)[1],"[.]"));
+	colnames(testData) = c("Like",nameData1[1],nameData2[1]);
+	colnames(trainData) = c ("Like",nameData1[1],nameData2[1]);
+
+	model = svm(Like~.,data=trainData,type="C-classification",kernel="polynomial");
+	tryCatch({
+		name = paste(c("res/plot",userId,".png"),collapse="");
+		png(name);
+		plot(model,trainData);
+		dev.off();
+	},
+	error = function(e){
+		cat("/!\\ Variable constante pour l'utilisateur ",userId," /!\\ \n");
+	});
+	tryCatch({
+		prediction = predict(model, testData[,-1], na.action = na.exclude);
+		result = as.data.frame(prediction);
+		result[,2] = testData[,2];
+		result[,3] = testData[,3];
+		#clean = result[-which(is.na(result[,3])),];
+		clean = result;
+		clean[,4] = testId;
+		colnames(clean) = c("Like",nameData1[1],nameData2[1],"Movie.id");
+		clean = clean[order(clean$Like, decreasing=TRUE),];
+		return(clean);
+	},
+	error = function(e){
+		cat("/!\\ Aucune prediction pour l'utilisateur ",userId, " /!\\ \n");
+	});
 }
