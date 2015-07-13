@@ -106,11 +106,9 @@ itemCold.BASIC = function(user, testId)
 			if(trainMovies[i,1] == userRatings[[j]][1,1]){
 				#On recupere les infos du film
 				movie = movies[trainMovies[i,1],];
-				#Si note > 3 : il a aime (1), sinon non (0), recherche svm
-				#y = userRatings[[j]][1,2] > 3 ? 1 : 0;
 				y = userRatings[[j]][1,2];
 
-				#On recupere les genres du film (classe svm)
+				#On recupere les genres du film (label svm)
 				movieGenres = list();
         			k = 1;
 	      			for(x in seq(6,dim(movie)[2])){
@@ -119,29 +117,27 @@ itemCold.BASIC = function(user, testId)
 		  				k = k+1;
                 			}
         			}
-				#On recupere la date du film (classe svm)
+				#On recupere la date du film (label svm)
 				date = as.numeric(strsplit(as.character(movie[1,3]),"-")[[1]][3]);
 				#On ajoute aux trainData la note,le genre et la date
+				#On ne conserve que 1 seul genre (cf rapport)
+				select = sample(1:length(movieGenres),1);
 				for(x in seq(length(movieGenres))){
 					#On extrait le nom du genre -syntaxe made in R...-	
 					g = levels(movieGenres[[x]])[(levels(movieGenres[[x]]) == movieGenres[[x]])];
 					#On s'en sert pour obtenir l'id du genre
 					id = which(genres[,1] == g);
-					#On n'ajoute qu'une fois la date [cf 1.]
-					if(x == 1){
+					if(x == select){
 						trainData[[A]] = c(y,id,date);
+						A = A + 1;
+						break;
 					}
-					else{
-						trainData[[A]] = c(y,id,NA);
-					}
-					A = A + 1;
 				}
 				#On peut break pour ce film et passer au suivant
 				break;
 			} 
 		}
 	}
-
 	#On transforme les data en data.frame (plus lisible et utilisable)
 	testData = data.frame(matrix(unlist(testData), ncol = 3, byrow = TRUE));
 	trainData = data.frame(matrix(unlist(trainData), ncol = 3, byrow = TRUE));
@@ -182,9 +178,95 @@ itemCold.BASIC = function(user, testId)
 }
 
 #Fonction dans laquelle on base svm sur des features provenant de IMDB
-itemCold.IMDB = function(userId, testId, class){
+itemCold.IMDB = function(userId, testId, class1, class2){
 
-	if(class == "composers"){
+	if(class1 == class2) stop("Il faut selectionner 2 classes differentes");
+
+	info1 = -1; info2 = -1;
+	if(class1 == "composers" || class2 == "composers"){
+		info1 = getComposers();
 	}
+	if(class1 == "directors" || class2 == "directors"){
+		if(info1 == -1){
+			info1 = getDirectors();
+		}
+		else info2 = getDirectors();
+	}
+	if(class1 == "keywords" || class2 == "keywords"){
+		if(info1 == -1){
+			info1 = getKeywords();
+		}
+		else info2 = getKeywords();
+	}
+	if(class1 == "writers" || class2 == "writers"){
+		if(info1 == -1){
+			info1 = getWriters();
+		}
+		else info2 = getWriters();
+	}
+	if(class1 == "countries" || class2 == "countries"){
+		if(info1 == -1){
+			info1 = getCountries();
+		}
+		else info2 = getWriters();
+	}
+	if(info1 == -1 || info2 == -1) stop("Aucune classe valide selectionee");
 
+	userRatings = list();
+	k = 1;
+	for(i in seq(dim(ratings)[1])){
+		if(ratings[i,1] == userId){
+			userRatings[[k]] = ratings[i,c(2,3)];
+			k = k + 1;
+		}
+	}
+	movies = getMovies();
+	testMovies = movies[testId,];
+	trainMovies = movies[-testId,];
+
+	testData = list();
+	A = 1;
+	for(i in seq(dim(testMovies)[1])){
+		movie = movies[testMovies[i,1],];
+		col1 = list(); col2 = list();
+		k1 = 1; k2 = 1;
+		#Pour chaque element dans la colonne importee...
+		for(x in seq(dim(info1)[1])){
+			#Si a la position de l'id du film on a autre chose que 0...
+			if(info1[x,2+movie[1]] > 0){
+				#On ajoute l'id de l'import (pas besoin des char precis)
+				col1[[k1]] = info1[x,1];
+				k1 = k1 + 1;
+			}
+		}
+		#Meme chose pour la deuxieme colonne...
+		for(x in seq(dim(info2)[1])){
+			if(info2[x,2+movie[1]] > 0){
+				col2[[k2]] = info2[x,1];
+				k2 = k2+1;
+			}
+		}
+	 #########################
+		for(x in seq(1,length(col1))){
+			if(x == 1){
+				testData[[A]] = c(0, as.integer(col1[[x]]), as.integer(col2[[x]]));
+			}
+		}
+	}
+	traindata = list();
+	A = 1;
+	for(i in seq(dim(trainMovies)[1])){
+		for(j in seq(length(userRatings))){
+			if(trainMovies[i,1] == userRatings[[j]][1,1]){
+				movie = movies[trainMovies[i,1],];
+				y = userRatings[[j]][1,2];
+				for(x in seq(dim(info1)[1])){
+					if(info1[x,2+movie[1]] > 0){
+						col1[[k1]] = info1[x,1];
+						###############
+					}
+				}
+			}
+		}
+	}
 }

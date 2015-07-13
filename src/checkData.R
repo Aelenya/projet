@@ -77,3 +77,30 @@ averageRatingPerFilm = function(nbRat){
 	return(retour);
 }
 
+#retourne le nombre moyen de label sur tous les films (chacun pouvant avoir plusieurs genre)
+labelAverage.BASIC = function(){
+	
+	nbMovies = dim(movies)[1];
+	somme = 0;
+	for(i in seq(nbMovies)){
+		movie = movies[i,];
+		for(j in seq(6,dim(movie)[2])){
+			if(movie[1,j] == 1){
+				somme = somme + 1;
+			}
+		}
+	}
+	return(somme/nbMovies);
+}
+#Retourne le nombre moyen de label par entrees provenant de IMDb
+labelAverage.IMDB = function(data){
+
+	nbMovies = dim(movies)[1];
+	somme = 0;
+	for(i in seq(nbMovies)){
+		movieId = as.integer(movies[i,1]);
+		somme = somme + length(which(data[,2+movieId] > 0));
+	}
+	return(somme/nbMovies);
+
+}
