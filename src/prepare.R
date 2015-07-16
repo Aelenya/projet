@@ -49,6 +49,19 @@ init = function(){
 	return(testId);
 }
 
+initMART.train = function(){
+	movies = getMovies();
+	nbMovies = dim(movies)[1];
+	trainId = sample(nbMovies, trunc(nbMovies/2));
+	return(trainId);
+}
+initMART.valid = function(trainId){
+	movies = getMovies()[-trainId,];
+	nbMovies = dim(movies)[1];
+	validId = sample(nbMovies, trunc(nbMovies/2));
+	return(validId);
+}
+
 #item cold start sans elements ajoutes de IMDb
 itemCold.BASIC = function(user, testId)
 {
